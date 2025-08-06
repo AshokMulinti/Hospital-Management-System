@@ -11,6 +11,8 @@ import com.ashok.Hospital_Management.repository.RoleRepository;
 import com.ashok.Hospital_Management.repository.UserRepository;
 import com.ashok.Hospital_Management.service.interfaces.ReceptionistService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -43,6 +45,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         Patient saved = patientRepository.save(patient);
         return new PatientResponse(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getPhoneNo(), saved.getAddress(), saved.getGender(), saved.getAge());
     }
+    @CacheEvict(value = "allAppointments", allEntries = true)
     @Override
     public AppointmentResponse scheduleAppointment(AppointmentRequest request){
         Patient patient = patientRepository.findById(request.patientId())
@@ -62,7 +65,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 savedAppointment.getTime(),
                 savedAppointment.getStatus());
     }
-
+    @CacheEvict(value = "allAppointments", allEntries = true)
     @Override
     public AppointmentResponse updateAppointment(UpdateAppointmentRequest request) {
         Patient patient = patientRepository.findById(request.patientId())
@@ -83,7 +86,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 savedAppointment.getTime(),
                 savedAppointment.getStatus());
     }
-
+    @Cacheable(value = "allAppointments")
     @Override
     public List<AppointmentResponse> getAllAppointments() {
 

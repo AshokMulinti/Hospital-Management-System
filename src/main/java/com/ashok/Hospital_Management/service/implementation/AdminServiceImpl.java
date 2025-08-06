@@ -12,6 +12,9 @@ import com.ashok.Hospital_Management.repository.RoleRepository;
 import com.ashok.Hospital_Management.repository.UserRepository;
 import com.ashok.Hospital_Management.service.interfaces.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @CacheEvict(value = "allUsers", allEntries = true)
     public UserResponse createNewUser(CreateUserRequest request){
         Optional<User> userRepo = userRepository.findByEmail(request.email());
 
@@ -49,6 +53,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Cacheable(value = "allUsers")
     public List<UserResponse> getAllUsers(){
         List<User> users = userRepository.findAll();
 
@@ -65,6 +70,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Cacheable(value = "userById", key = "#id")
     public UserResponse getUserById(Long id){
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -77,6 +83,10 @@ public class AdminServiceImpl implements AdminService {
                 user.getRoles()
         );
     }
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#request.id()"),
+            @CacheEvict(value = "allUsers", allEntries = true)
+    })
     @Override
     public UserResponse updateUser(UpdateRequest request){
         User user = userRepository.findById(request.id())
@@ -100,6 +110,10 @@ public class AdminServiceImpl implements AdminService {
                 updatedUser.getRoles()
         );
     }
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#id"),
+            @CacheEvict(value = "allUsers", allEntries = true)
+    })
     @Override
     public UserResponse deleteUser(Long id){
         User user = userRepository.findById(id)
@@ -110,6 +124,7 @@ public class AdminServiceImpl implements AdminService {
         return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getPhoneNo(), user.getPassword(),user.getRoles());
     }
     @Override
+    @Cacheable(value = "allRoles")
     public List<RoleResponse> getAllRoles() {
         List<Role> roles = roleRepository.findAll();
 
@@ -117,4 +132,5 @@ public class AdminServiceImpl implements AdminService {
                 .map(role -> new RoleResponse(role.getId(), role.getRole()))
                 .toList();
     }
+
 }

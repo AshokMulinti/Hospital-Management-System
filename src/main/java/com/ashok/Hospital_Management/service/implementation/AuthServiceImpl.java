@@ -9,6 +9,7 @@ import com.ashok.Hospital_Management.repository.UserRepository;
 import com.ashok.Hospital_Management.security.JwtUtil;
 import com.ashok.Hospital_Management.service.interfaces.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(UserRequest request){
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new UserNotFoundException("Incorrect Email or Password"));
+        User user = getUserByEmail(request.email());
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new UserNotFoundException("Incorrect Email or Password");
         }
@@ -40,4 +40,11 @@ public class AuthServiceImpl implements AuthService {
                 .toList();
         return jwtUtil.generateToken(request.email(), roles);
     }
+    @Cacheable(value = "userDetails", key = "#email")
+    public User getUserByEmail(String email) {
+        System.out.println("Fetching user from DB...");
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Incorrect Email or Password"));
+    }
+
 }
