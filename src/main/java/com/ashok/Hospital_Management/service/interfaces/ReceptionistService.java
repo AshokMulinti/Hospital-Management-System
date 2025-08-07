@@ -12,4 +12,6 @@ public interface ReceptionistService {
     AppointmentResponse updateAppointment(UpdateAppointmentRequest request);
 
     List<AppointmentResponse> getAllAppointments();
+
+    List<PatientResponse> getAllPatients();
 }

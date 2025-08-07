@@ -55,6 +55,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Cacheable(value = "allUsers")
     public List<UserResponse> getAllUsers(){
+        System.out.println("Get all Users is working");
         List<User> users = userRepository.findAll();
 
         return users.stream()
@@ -72,6 +73,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Cacheable(value = "userById", key = "#id")
     public UserResponse getUserById(Long id){
+        System.out.println("Getting by id "+id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         return new UserResponse(
@@ -126,6 +128,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Cacheable(value = "allRoles")
     public List<RoleResponse> getAllRoles() {
+        System.out.print("Fetching all from DB");
         List<Role> roles = roleRepository.findAll();
 
         return roles.stream()

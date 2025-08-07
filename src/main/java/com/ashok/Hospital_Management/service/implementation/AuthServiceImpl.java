@@ -30,7 +30,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(UserRequest request){
-        User user = getUserByEmail(request.email());
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UserNotFoundException("Incorrect Email or Password"));
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new UserNotFoundException("Incorrect Email or Password");
         }
@@ -39,12 +40,6 @@ public class AuthServiceImpl implements AuthService {
                 .map(Role::getRole)
                 .toList();
         return jwtUtil.generateToken(request.email(), roles);
-    }
-    @Cacheable(value = "userDetails", key = "#email")
-    public User getUserByEmail(String email) {
-        System.out.println("Fetching user from DB...");
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Incorrect Email or Password"));
     }
 
 }

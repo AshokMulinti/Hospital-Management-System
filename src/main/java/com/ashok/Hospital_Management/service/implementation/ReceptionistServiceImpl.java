@@ -7,8 +7,6 @@ import com.ashok.Hospital_Management.exceptions.UserAlreadyExistException;
 import com.ashok.Hospital_Management.exceptions.UserNotFoundException;
 import com.ashok.Hospital_Management.repository.AppointmentRepository;
 import com.ashok.Hospital_Management.repository.PatientRepository;
-import com.ashok.Hospital_Management.repository.RoleRepository;
-import com.ashok.Hospital_Management.repository.UserRepository;
 import com.ashok.Hospital_Management.service.interfaces.ReceptionistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -23,11 +21,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReceptionistServiceImpl implements ReceptionistService {
 
-    private final UserRepository userRepository;
+
     private final PatientRepository patientRepository;
-    private final RoleRepository roleRepository;
     private final AppointmentRepository appointmentRepository;
 
+    @CacheEvict(value = "allPatients", allEntries = true)
     @Override
     public PatientResponse registerPatient(PatientRequest request){
         Optional<Patient> patientDb = patientRepository.findByEmail(request.email());
@@ -89,7 +87,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     @Cacheable(value = "allAppointments")
     @Override
     public List<AppointmentResponse> getAllAppointments() {
-
+        System.out.println("Fetching from DB");
         List<Appointment> appointments = appointmentRepository.findAll();
 
         return appointments.stream()
@@ -101,4 +99,23 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 ))
                 .toList();
     }
+    @Cacheable(value = "allPatients")
+    @Override
+    public List<PatientResponse> getAllPatients() {
+        System.out.println("fetching all patients");
+        List<Patient> patients = patientRepository.findAll();
+
+        return patients.stream()
+                .map(p -> new PatientResponse(
+                        p.getId(),
+                        p.getUsername(),
+                        p.getEmail(),
+                        p.getPhoneNo(),
+                        p.getAddress(),
+                        p.getGender(),
+                        p.getAge()
+                ))
+                .toList();
+    }
+
 }

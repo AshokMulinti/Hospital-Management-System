@@ -39,5 +39,9 @@ public class ReceptionistController {
         List<AppointmentResponse> response = receptionistService.getAllAppointments();
         return ResponseEntity.ok(response);
     }
-
+    @GetMapping("/patients")
+    public ResponseEntity<List<PatientResponse>> getAllPatients() {
+        List<PatientResponse> response = receptionistService.getAllPatients();
+        return ResponseEntity.ok(response);
+    }
 }
